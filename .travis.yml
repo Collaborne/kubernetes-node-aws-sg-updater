@@ -1,0 +1,43 @@
+dist: trusty
+sudo: false
+group: beta
+
+language: node_js
+node_js:
+- node
+services:
+- docker
+cache:
+  directories:
+  - node_modules
+before_install:
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then BASE_NAME=${TRAVIS_BRANCH}; else BASE_NAME=pr${TRAVIS_PULL_REQUEST}; fi
+- NAME=`echo ${BASE_NAME} | tr -cd '[\-._[:alnum:]]'`
+- TS=`date +%Y%m%dT%H%M%S`
+- VERSION_TAG=${NAME}-${TS}-${TRAVIS_COMMIT}
+- TAGS="${NAME} ${VERSION_TAG}"
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ]; then TAGS="${TAGS} latest"; fi
+
+- docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+
+- "if [ -d node_modules ] && [ x$(cat node_modules/.last-node-version 2>/dev/null) != x$(node -e 'console.log(process.version)') ]; then npm rebuild && node -e 'console.log(process.version)' > node_modules/.last-node-version; fi"
+install:
+- npm install
+- npm prune && npm shrinkwrap && mkdir -p deploy && cp package.json npm-shrinkwrap.json deploy && cp -r src deploy/src && npm install --production --prefix deploy --ignore-scripts
+after_success:
+- docker build `echo ${TAGS} | sed -re "s,\b([-._[:alnum:]]+)\b,-t ${DOCKER_NAME}:\1,g"` .
+deploy:
+  provider: script
+  script: "${SHELL} ./travis-deploy.sh ${DOCKER_NAME} ${TAGS}"
+  on:
+    all_branches: true
+env:
+  global:
+    - DOCKER_NAME=collaborne/kubernetes-node-aws-sg-updater
+    - secure: "KxQRCB0Sw8BymhB8AY782YvlqKcXchPNcbEKIUKN0XZz4o1Izh1HSfcCaPeCSDVQiYtOiTn9VQlUVpFkbOuwXPrdNGWYRZP6xjeUkymKV3q7PIxVz3v9/Vb7lM0VF7MJ8zeN3CchWK/YTZhsnVO2/u+eYqxY2kxECMq1nxgC6VNSMJFOPmuyVBlQBdw58bpOysdUFeA3s8BS4vogC4GMI7Jm8Tgneg7lcLS5Mnx/+gkYcieshaCgboTE3syJeuP4gFvlS97oRXXn5VnJF++EUsnV43e+vxPOo3oA3jiOP/G40qZrdFHytjgPQPZ15NAxZ5RW5H29vpqsIhYq1R8DO2veLj2XcheUCylcLZ4SnsilLQOqaPNtwBFv1va/m5nByXVV3mjxN7jghS47PMjUHuSPGxHcx/EOzmx9zVCpPo+ktsSUClew4kSqPW57jYx1LajNjQMm9PI2qMKCEwGQYRJcIaClbX5TWDbwQzSZ2m4d9Gpwwj0y3p7lx+wQebKT4bM887YcAwwdXV39zgcXotZCAGMzkbiPdSXoNENek92aWStVvIXlKv8cBpL2mKLpj2bf3TpemgXZ1NnqVaDzlbDl2oYOZkbK86AW1quggFQril9MKDI7ovgl2fPadZNdyyrMrbWCSJcio1VbGxruOhIuWzQLCVhcnfZgkqv8LY4="
+    - secure: "p0RcTDX3YiIs1VkEBb7XKiwxY+gGlyElNtuRm1Daq3YBOoWJFcUOIwgGTV83QZrQttKZn8KF/dd9+GEZK0d3wulwDvyemrRYRVkjeLKyoyr71ZTdaNxQQVdKpV4T6/bI77TgD2UnXldBpDwKVLWGNJnMhiohJstqNKUMmvaFNCPsbZ4vOtw5DcSZ+1rO+aODKcg7VSAPIlv9ZjCezuQ6qB9ifPo8mTbMwvjmqcdNrGPci05hhQ8QvmJgFpbBSxNWMwFz78t3lfW7QXZzWFLKFOsgtT23fU5cO366v2mKRplEGHlTQSIYntFfYQQU6PZWf7O+/45h13+dfGRcXWOe+OhocNwoOALhx2JEXWrq/HWBn85DlpNXNq2c45UVkfly41ZMSWGUqRqPiDPzEbSSJP//zaQvfvbY3h7yDSov0ABuv3nh8liZiqwWUoAcdA4ipMiDY4o506SYwvlSYXH4fokSJM/JePtUaCXsqfSkaFH9iUXuJKa+gaVEHNv7eR6uKbkXTcBjnL4g+uINd+sIGZ51oulasbqVj2ljgVNc7yfanpOOr08r6XPlC1hGBDUiLEvw6Pljy6P8DyBjsymrOareq9vSYn/6lhz240XCFZdylgnawvFiZ/k0coRu502afhcChS8u/6JgOKjaZEWYvcE/Z7Red3eQI7FW+wFHoX8="
+
+
+
+
+
