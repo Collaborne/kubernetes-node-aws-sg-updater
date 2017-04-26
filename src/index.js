@@ -321,6 +321,11 @@ k8s(k8sConfig).then(function(k8sClient) {
 
 	function mainLoop() {
 		nodes.list().then(function(nodeList) {
+			// FIXME: Somehow we get an error here as a string, rather than the expected promise rejection.
+			if (typeof nodeList !== 'object') {
+				logger.error(`Cannot get nodes: ${nodeList}`);
+				process.exit(1);
+			}
 			logger.info(`Processing ${nodeList.items.length} nodes at version ${nodeList.metadata.resourceVersion}`);
 			nodeList.items.forEach(addNode);
 
