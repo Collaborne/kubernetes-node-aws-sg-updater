@@ -316,7 +316,7 @@ k8s(k8sConfig).then(function(k8sClient) {
 	}
 
 	function removeNode(node) {
-		return removeNodeFromSecurityGroup(node, argv.securityGroupId, argv.inboundRule, argv.outboundRule, { DryRun: argv.dryRun }).catch(createHandler(node, 'remove'));
+		return removeNodeFromSecurityGroup(node, argv.securityGroupId, { DryRun: argv.dryRun }).catch(createHandler(node, 'remove'));
 	}
 
 	function mainLoop() {
