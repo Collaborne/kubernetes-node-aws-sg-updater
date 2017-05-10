@@ -200,7 +200,7 @@ k8s(k8sConfig).then(function(k8sClient) {
 
 				// There should be this one security group that we wanted; still check: the group might have been removed.
 				// We cannot add the node, and we cannot create the security group, so this is a clear error.
-				if (data.length === 0) {
+				if (data.SecurityGroups.length === 0) {
 					logger.warn(`No security groups returned for id ${securityGroupId}`);
 					return reject(new Error(`Missing security group ${securityGroupId}`));
 				}
@@ -290,7 +290,7 @@ k8s(k8sConfig).then(function(k8sClient) {
 
 				// There should be this one security group that we wanted; still check: the group might have been removed,
 				// in which case we're perfectly fine.
-				if (data.length === 0) {
+				if (data.SecurityGroups.length === 0) {
 					logger.warn(`No security groups returned for id ${securityGroupId}`);
 					return resolve({});
 				}
