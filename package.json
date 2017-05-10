@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/Collaborne/kubernetes-node-aws-sg-updater#readme",
   "dependencies": {
-    "auto-kubernetes-client": "^0.3.1",
+    "auto-kubernetes-client": "^0.4.2",
     "aws-sdk": "^2.45.0",
     "check-node-version": "^2.0.1",
     "log4js": "^1.1.1",
