@@ -260,6 +260,7 @@ k8s(k8sConfig).then(function(k8sClient) {
 		// For each of these rules we need to reset the Cidr entry to just our node address, and then revoke them all.
 		const revokeIpPermissions = ipPermissions.filter(ipPermission => ipPermission.IpRanges.indexOf(ipRange => ipRange.Cidr === nodeCidr) !== -1).map(ipPermission => Object.assign({}, ipPermission, { IpRange: { Cidr: nodeCidr }}));
 		const revokeParams = Object.assign({}, extraParams, {
+			GroupId: securityGroupId,
 			IpPermissions: revokeIpPermissions
 		});				
 		return new Promise(function(resolve, reject) {
