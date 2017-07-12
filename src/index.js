@@ -212,7 +212,7 @@ k8s(k8sConfig).then(function(k8sClient) {
 				 *
 				 * @param {any} existingIpPermissions
 				 * @param {any} ipPermissions
-				 * @returns {Promise<Array<IpPermission>>}
+				 * @returns {boolean}
 				 */
 				function doesNotContain(existingIpPermissions, ipPermission) {
 					// Reverse logic: see if we can find it, and if so then we already exist.
