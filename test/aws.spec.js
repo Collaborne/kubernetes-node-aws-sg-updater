@@ -17,3 +17,25 @@ test('getNodeAddress returns preferred type when available', assert => {
 	assert.deepEqual(aws.getNodeAddress(node), { type: 'ExternalIP', address: 'external' });
 	assert.end();
 });
+
+test('revokeEC2 calls revoke function with matched permission', assert => {
+	const node = makeNode({ status: { addresses: [ { type: 'ExternalIP', address: '192.0.2.1' }]}});
+	const ipPermissions = [
+		{
+			FromPort: 27017,
+			IpProtocol: 'tcp',
+			IpRanges: [
+				// An address we do not care about
+				{ CidrIp: 'other' },
+				// The one we want
+				{ CidrIp: '192.0.2.1/32' }
+			]
+		}
+	]
+	aws.revokeEC2(node, 'group', ipPermissions, function(revokeParams, cb) {
+		assert.equal(revokeParams.GroupId, 'group');
+		assert.equal(revokeParams.IpPermissions.length, 1);
+		assert.deepEqual(revokeParams.IpPermissions[0], { FromPort: 27017, IpProtocol: 'tcp', IpRanges: [ { CidrIp: '192.0.2.1/32' }]});
+		cb();
+	}).then(() => assert.end());
+});
