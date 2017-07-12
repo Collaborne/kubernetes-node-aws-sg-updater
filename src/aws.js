@@ -90,18 +90,24 @@ export function ruleToIpPermissions(rule, nodeCidrIp) {
 /**
  * Extract address information from the node status.
  *
+ * This tries to find an address based on the given preference for the type.
+ *
  * @package
  * @param {Kubernetes.Node} node
- * @returns
+ * @param {Array<string>} [addressPreference=['ExternalIP', 'InternalIP']]
+ * @returns {Kubernetes.Address} an address, or null if there are no addresses at all known
  */
-export function getNodeAddress(node) {
-	// Find a suitable IP for the node: ExternalIP preferably, otherwise use the InternalIP, or whatever else is there.
-	const addressPreference = [ 'InternalIP', 'ExternalIP' ];
-	const addresses = node.status.addresses.sort((a, b) => addressPreference.indexOf(b.type) - addressPreference.indexOf(a.type));
+export function getNodeAddress(node, addressPreference = [ 'ExternalIP', 'InternalIP' ]) {
+	if (!Array.isArray(node.status.addresses) || node.status.addresses.length === 0) {
+		logger.warn(`Cannot determine ${addressPreference[0]} address of node ${node.metadata.name}, no addresses available`);
+		return null;
+	}
+
+	const addresses = node.status.addresses.sort((a, b) => addressPreference.indexOf(a.type) - addressPreference.indexOf(b.type));
 
 	const nodeAddress = addresses[0];
-	if (nodeAddress.type !== 'ExternalIP') {
-		logger.warn(`Cannot determine ExternalIP address of node ${node.metadata.name}, using ${nodeAddress.type} ${nodeAddress.address}`);
+	if (nodeAddress.type !== addressPreference[0]) {
+		logger.warn(`Cannot determine ${addressPreference[0]} address of node ${node.metadata.name}, using ${nodeAddress.type} ${nodeAddress.address}`);
 	}
 
 	return nodeAddress;
