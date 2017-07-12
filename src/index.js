@@ -112,30 +112,34 @@ k8s(k8sConfig).then(function(k8sClient) {
 				process.exit(1);
 			}
 			logger.info(`Processing ${nodeList.items.length} nodes at version ${nodeList.metadata.resourceVersion}`);
-			nodeList.items.forEach(addNode);
+			
+			
+			const syncPromises = nodeList.items.map(addNode);
 
-			logger.info('Watching nodes...');
-			nodes.watch(nodeList.metadata.resourceVersion)
-				.on('data', function(item) {
-					switch (item.type) {
-					case 'ADDED':
-						addNode(item.object);
-						break;
-					case 'DELETED':
-						removeNode(item.object);
-						break;
-					case 'MODIFIED':
-						// Ignore?
-						break;
-					default:
-						logger.warn(`Unkown watch event type ${item.type}, ignoring`);
-					}
-				})
-				.on('end', function() {
-					// Restart the whole thing.
-					logger.info('Watch ended, re-syncing everything');
-					return mainLoop();
-				});
+			Promise.all(syncPromises).then(() => {
+				logger.info('Watching nodes...');
+				nodes.watch(nodeList.metadata.resourceVersion)
+					.on('data', function(item) {
+						switch (item.type) {
+						case 'ADDED':
+							addNode(item.object);
+							break;
+						case 'DELETED':
+							removeNode(item.object);
+							break;
+						case 'MODIFIED':
+							// Ignore?
+							break;
+						default:
+							logger.warn(`Unkown watch event type ${item.type}, ignoring`);
+						}
+					})
+					.on('end', function() {
+						// Restart the whole thing.
+						logger.info('Watch ended, re-syncing everything');
+						return mainLoop();
+					});
+			});
 		});
 	}
 
