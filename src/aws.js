@@ -128,15 +128,17 @@ export function getNodeAddress(node, addressPreference = [ 'ExternalIP', 'Intern
  * @returns
  */
 export function authorizeEC2(node, securityGroupId, rules, removeExistingIpPermissions, authorize, extraParams = {}) {
+	const nodeCidr = `${getNodeAddress(node).address}/32`;
+
 	return new Promise(function(resolve, reject) {
 		// Calculate the required set of permissions from the rules
 		const ipPermissions = rules
-			.map(rule => ruleToIpPermissions(rule, `${getNodeAddress(node).address}/32`))
+			.map(rule => ruleToIpPermissions(rule, nodeCidr))
 			.reduce((result, ipPermissions) => result.concat(ipPermissions), [])
 			.filter(removeExistingIpPermissions);
 
 		if (ipPermissions.length > 0) {
-			logger.info(`Authorizing ${node.metadata.name} for ${JSON.stringify(ipPermissions)}`);
+			logger.info(`Authorizing ${node.metadata.name} (${nodeCidr}) for ${JSON.stringify(ipPermissions)}`);
 
 			const params = Object.assign({}, extraParams, {
 				GroupId: securityGroupId,
@@ -144,7 +146,7 @@ export function authorizeEC2(node, securityGroupId, rules, removeExistingIpPermi
 			});
 			return authorize(params, function(err, data) {
 				if (err) {
-					logger.error(`Cannot authorize rules for ${node.metadata.name}: ${err.message}`);
+					logger.error(`Cannot authorize rules for ${node.metadata.name} (${nodeCidr}): ${err.message}`);
 					return reject(err);
 				} else {
 					return resolve(data);
@@ -265,7 +267,7 @@ export function revokeEC2(node, securityGroupId, ipPermissions, ec2RevokeFunctio
 		});				
 		return ec2RevokeFunction(revokeParams, function(err, data) {
 			if (err) {
-				logger.error(`Cannot revoke ingress rules for ${node.metadata.name} from ${securityGroupId}: ${err.message}`);
+				logger.error(`Cannot revoke ingress rules for ${node.metadata.name} (${nodeCidr}) from ${securityGroupId}: ${err.message}`);
 				return reject(err);
 			} else {
 				return resolve(data);
