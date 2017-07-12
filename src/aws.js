@@ -251,14 +251,18 @@ export function addNodeToSecurityGroup(ec2, node, securityGroupId, inboundRules 
 export function revokeEC2(node, securityGroupId, ipPermissions, ec2RevokeFunction, extraParams = {}) {
 	const nodeCidr = `${getNodeAddress(node).address}/32`;
 
-	// Find all ingress rules for this node
-	// For each of these rules we need to reset the Cidr entry to just our node address, and then revoke them all.
-	const revokeIpPermissions = ipPermissions.filter(ipPermission => ipPermission.IpRanges.findIndex(ipRange => ipRange.CidrIp === nodeCidr) !== -1).map(ipPermission => Object.assign({}, ipPermission, { IpRanges: [{ CidrIp: nodeCidr }]}));
-	const revokeParams = Object.assign({}, extraParams, {
-		GroupId: securityGroupId,
-		IpPermissions: revokeIpPermissions
-	});				
 	return new Promise(function(resolve, reject) {
+		// Find all ingress rules for this node
+		// For each of these rules we need to reset the Cidr entry to just our node address, and then revoke them all.
+		const revokeIpPermissions = ipPermissions.filter(ipPermission => ipPermission.IpRanges.findIndex(ipRange => ipRange.CidrIp === nodeCidr) !== -1).map(ipPermission => Object.assign({}, ipPermission, { IpRanges: [{ CidrIp: nodeCidr }]}));
+		if (revokeIpPermissions.length === 0) {
+			return reject(new Error(`No permissions found for ${node.metadata.name} (${nodeCidr})`));
+		}
+
+		const revokeParams = Object.assign({}, extraParams, {
+			GroupId: securityGroupId,
+			IpPermissions: revokeIpPermissions
+		});				
 		return ec2RevokeFunction(revokeParams, function(err, data) {
 			if (err) {
 				logger.error(`Cannot revoke ingress rules for ${node.metadata.name} from ${securityGroupId}: ${err.message}`);
