@@ -98,16 +98,19 @@ export function ruleToIpPermissions(rule, nodeCidrIp) {
  * @returns {Kubernetes.Address} an address, or null if there are no addresses at all known
  */
 export function getNodeAddress(node, addressPreference = [ 'ExternalIP', 'InternalIP' ]) {
+	const wantedType = addressPreference[0];
 	if (!Array.isArray(node.status.addresses) || node.status.addresses.length === 0) {
-		logger.warn(`Cannot determine ${addressPreference[0]} address of node ${node.metadata.name}, no addresses available`);
+		logger.warn(`Cannot determine ${wantedType} address of node ${node.metadata.name}, no addresses available`);
 		return null;
 	}
 
-	const addresses = node.status.addresses.sort((a, b) => addressPreference.indexOf(a.type) - addressPreference.indexOf(b.type));
+	// Reverse the given preference, so we can sort easily and put irrelevant items to the end.
+	const sortOrder = Array.from(addressPreference).reverse();
+	const addresses = node.status.addresses.sort((a, b) => sortOrder.indexOf(b.type) - sortOrder.indexOf(a.type));
 
 	const nodeAddress = addresses[0];
-	if (nodeAddress.type !== addressPreference[0]) {
-		logger.warn(`Cannot determine ${addressPreference[0]} address of node ${node.metadata.name}, using ${nodeAddress.type} ${nodeAddress.address}`);
+	if (nodeAddress.type !== wantedType) {
+		logger.warn(`Cannot determine ${wantedType} address of node ${node.metadata.name}, using ${nodeAddress.type} ${nodeAddress.address}`);
 	}
 
 	return nodeAddress;

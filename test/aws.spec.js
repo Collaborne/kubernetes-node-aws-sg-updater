@@ -7,14 +7,67 @@ function makeNode(status, name = 'ns/test') {
 }
 
 test('getNodeAddress returns empty for missing addresses', assert => {
-	const node = makeNode({ status: { addresses: [ ] }});
+	const node = makeNode({
+		status: {
+			addresses: [
+			]
+		}
+	});
 	assert.notOk(aws.getNodeAddress(node));
 	assert.end();
 });
 
 test('getNodeAddress returns preferred type when available', assert => {
-	const node = makeNode({ status: { addresses: [ { type: 'ExternalIP', address: 'external' }, { type: 'InternalIP', address: 'internal' } ] }});
+	const node = makeNode({
+		status: {
+			addresses: [
+				{ type: 'ExternalIP', address: 'external' },
+				{ type: 'InternalIP', address: 'internal' }
+			]
+		}
+	});
 	assert.deepEqual(aws.getNodeAddress(node), { type: 'ExternalIP', address: 'external' });
+	assert.end();
+});
+
+test('getNodeAddress returns preferred type when unspecific types are available', assert => {
+	const node = makeNode({
+		status: {
+			addresses: [
+				{ type: 'SomethingWeird', address: 'other' },
+				{ type: 'ExternalIP', address: 'external' }
+			]
+		}
+	});
+	
+	assert.deepEqual(aws.getNodeAddress(node), { type: 'ExternalIP', address: 'external' });
+	assert.end();
+});
+
+test('getNodeAddress returns less preferred type when preferred type is not available and unspecific types are available', assert => {
+	const node = makeNode({
+		status: {
+			addresses: [
+				{ type: 'SomethingWeird', address: 'other' },
+				{ type: 'InternalIP', address: 'internal' }
+			]
+		}
+	});
+	
+	assert.deepEqual(aws.getNodeAddress(node), { type: 'InternalIP', address: 'internal' });
+	assert.end();
+});
+
+test('getNodeAddress returns any type when preferred types are not available and unspecific types are available', assert => {
+	const node = makeNode({
+		status: {
+			addresses: [
+				{ type: 'SomethingWeird', address: 'other' },
+			]
+		}
+	});
+	
+	assert.deepEqual(aws.getNodeAddress(node), { type: 'SomethingWeird', address: 'other' });
 	assert.end();
 });
 
