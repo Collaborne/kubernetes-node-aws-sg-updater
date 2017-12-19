@@ -1,5 +1,7 @@
 # kubernetes-node-aws-sg-updater [![Build Status](https://travis-ci.org/Collaborne/kubernetes-node-aws-sg-updater.svg?branch=master)](https://travis-ci.org/Collaborne/kubernetes-node-aws-sg-updater)
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/Collaborne/kubernetes-node-aws-sg-updater.svg)](https://greenkeeper.io/)
+
 Automatically keep AWS security groups up-to-date for nodes
 
 This tool is deployed into a Kubernetes cluster, and will then monitor the nodes in the cluster, and synchronize rules for these nodes in a security group. This can be used in combination with EC2-classic to give a cluster (in a VPC) access to existing infrastructure.
