@@ -34,7 +34,7 @@
     "check-node-version": "^3.1.1",
     "log4js": "^5.0.0",
     "npm-warn-shrinkwrap": "^1.0.2",
-    "yargs": "^13.1.0"
+    "yargs": "^14.0.0"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",
