@@ -1,5 +1,8 @@
 /node_modules/
 /deploy/
+/.nyc_output/
+/coverage/
+/dist/
 npm-debug.log
 npm-shrinkwrap.json
 
