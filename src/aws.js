@@ -5,9 +5,6 @@
  */
 'use strict';
 
-// @ts-ignore
-import * as AWS from 'aws-sdk';
-
 // Kubernetes types
 /**
  * @typedef Kubernetes.Metadata
@@ -30,6 +27,9 @@ import * as AWS from 'aws-sdk';
  */
 
 // AWS types
+/**
+ * @typedef AWS.EC2
+ */
 /**
  * @typedef AWS.EC2.IpRange
  * @property {string} CidrIp
