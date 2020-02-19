@@ -30,7 +30,7 @@
   "homepage": "https://github.com/Collaborne/kubernetes-node-aws-sg-updater#readme",
   "dependencies": {
     "auto-kubernetes-client": "^0.6.1",
-    "aws-sdk": "^2.572.0",
+    "aws-sdk": "^2.622.0",
     "check-node-version": "^4.0.2",
     "log4js": "^6.0.0",
     "npm-warn-shrinkwrap": "^1.0.2",
